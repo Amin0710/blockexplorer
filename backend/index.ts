@@ -44,9 +44,19 @@ async function fetchAndStoreTransactions() {
 		if (!transactions || !Array.isArray(transactions)) return;
 
 		for (const tx of transactions) {
+			const txDetails = await axios.get(
+				`https://api.blockchair.com/bitcoin/dashboards/transaction/${tx.hash}`
+			);
+
+			const inputs = txDetails.data?.data?.[tx.hash]?.inputs;
+			const outputs = txDetails.data?.data?.[tx.hash]?.outputs;
+
+			const sender = inputs?.[0]?.recipient ?? "unknown";
+			const receiver = outputs?.[0]?.recipient ?? "unknown";
+
 			await prisma.transaction.upsert({
 				where: { hash: tx.hash },
-				update: {},
+				update: { sender, receiver },
 				create: {
 					hash: tx.hash,
 					chain: "bitcoin",
@@ -54,8 +64,8 @@ async function fetchAndStoreTransactions() {
 					timestamp: new Date(tx.time),
 					value: tx.output_total / 1e8, // Satoshi → BTC
 					fee: tx.fee / 1e8,
-					sender: "unknown",
-					receiver: "unknown",
+					sender,
+					receiver,
 				},
 			});
 		}
