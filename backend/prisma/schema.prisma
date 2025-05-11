@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Stats {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  hashRate      Float?
+  mempoolTxCount Int?
+  marketCapUsd  Float?
+}
+
+model Transaction {
+  id         Int      @id @default(autoincrement())
+  hash       String   @unique
+  chain      String
+  blockId    Int?
+  timestamp  DateTime?
+  value      Float?
+  fee        Float?
+  sender     String?
+  receiver   String?
+}
+
+model Wallet {
+  id         Int      @id @default(autoincrement())
+  address    String   @unique
+  balance    Float?
+  txCount    Int?
+  firstSeen  DateTime?
+  lastSeen   DateTime?
+}
