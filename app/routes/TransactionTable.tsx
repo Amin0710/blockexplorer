@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 type Transaction = {
 	id: number;
@@ -7,6 +8,8 @@ type Transaction = {
 	timestamp: string;
 	value: number;
 	fee: number;
+	sender?: string;
+	receiver?: string;
 };
 
 export function TransactionTable() {
@@ -33,6 +36,8 @@ export function TransactionTable() {
 						<th className="px-2 py-1">Value (BTC)</th>
 						<th className="px-2 py-1">Fee (BTC)</th>
 						<th className="px-2 py-1">Block</th>
+						<th className="px-2 py-1">Sender</th>
+						<th className="px-2 py-1">Receiver</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -42,6 +47,20 @@ export function TransactionTable() {
 							<td className="px-2 py-1">{tx.value.toFixed(8)}</td>
 							<td className="px-2 py-1">{tx.fee.toFixed(8)}</td>
 							<td className="px-2 py-1">{tx.blockId ?? "N/A"}</td>
+							<td>
+								<Link
+									to={`/wallet/${tx.sender}`}
+									className="text-blue-500 underline">
+									{tx.sender}
+								</Link>
+							</td>
+							<td>
+								<Link
+									to={`/wallet/${tx.receiver}`}
+									className="text-blue-500 underline">
+									{tx.receiver}
+								</Link>
+							</td>
 						</tr>
 					))}
 				</tbody>

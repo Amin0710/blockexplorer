@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import axios from "axios";
 import { PrismaClient } from "@prisma/client";
+import type { RequestHandler } from "express";
 
 const prisma = new PrismaClient();
 const app = express();
@@ -130,6 +131,28 @@ app.get("/api/transactions", async (req, res) => {
 		totalPages: Math.ceil(total / pageSize),
 	});
 });
+
+const getWalletByAddress: RequestHandler = async (req, res) => {
+	const address = req.params.address;
+
+	try {
+		const wallet = await prisma.wallet.findUnique({
+			where: { address },
+		});
+
+		if (!wallet) {
+			res.status(404).json({ error: "Wallet not found" });
+			return;
+		}
+
+		res.json(wallet);
+	} catch (err) {
+		console.error("❌ Error fetching wallet:", err);
+		res.status(500).json({ error: "Internal server error" });
+	}
+};
+
+app.get("/api/wallet/:address", getWalletByAddress);
 
 app.listen(PORT, () => {
 	console.log(`🚀 Server listening on http://localhost:${PORT}`);
