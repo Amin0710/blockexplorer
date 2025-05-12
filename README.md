@@ -1,87 +1,68 @@
-# Welcome to React Router!
+# Block Explorer
 
-A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
-
-## Features
-
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-
-## Getting Started
-
-### Installation
-
-Install the dependencies:
-
-```bash
-npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+A compact full-stack blockchain explorer built with React, TypeScript, PostgreSQL, and Prisma. It uses the Blockchair API and follows a persist-then-serve model with real-time stats via SSE.
 
 ---
 
-Built with ❤️ using React Router.
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- Docker & Docker Compose
+
+### Environment Setup
+
+```bash
+cp .env.example .env
+```
+
+Required environment variables:
+DATABASE_URL="postgresql://devuser:devpass@localhost:5432/blockexplorer"
+BLOCKCHAIR_API_URL="https://api.blockchair.com/stats"
+
+# Start backend and database
+
+docker-compose up -d
+
+# Run DB migrations
+
+docker-compose exec backend npx prisma migrate deploy
+
+⚙️ Architecture
+Frontend: React + React Router v7 (framework mode)
+Styling: Tailwind CSS + Shadcn UI
+Backend: Node.js + Express + Prisma + PostgreSQL
+Routing: File-based with route loaders
+Realtime: /events/stats SSE endpoint updates every 60 seconds
+
+🗄️ Database Choice
+PostgreSQL chosen over SQLite for:
+Scalability & concurrency
+Better support for joins, indexing, JSON
+
+Prisma used for:
+Type-safe DB queries
+Smooth migrations
+Native TypeScript support
+
+📉 API Quota Management
+Blockchair free-tier:
+
+⏱ 1 request per minute per endpoint
+
+📄 Max 100 rows
+Strategy
+All fetches happen server-side (no client API access)
+Cached in Postgres and served to frontend
+Global stats: pulled every 60s
+Transactions: pulled every minute for BTC and ETH (latest 10 mins, max 100)
+
+✅ Testing
+Unit Tests
+Located in test/Wallet.test.ts
+Covers:
+Successful loader execution
+Missing address error
+
+npm run test
