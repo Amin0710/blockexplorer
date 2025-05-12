@@ -11,7 +11,7 @@ export async function fetchAndStoreStats() {
 	}
 
 	try {
-		const response = await axios.get(apiUrl);
+		const response = await axios.get(`${apiUrl}/stats`);
 		const btcStats = response.data?.data?.bitcoin?.data;
 
 		if (!btcStats) return;
