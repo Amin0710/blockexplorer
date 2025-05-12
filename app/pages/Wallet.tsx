@@ -1,13 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-
-type Wallet = {
-	address: string;
-	balance: number | null;
-	txCount: number | null;
-	firstSeen: string | null;
-	lastSeen: string | null;
-};
+import type { Wallet } from "../types";
+import { fetchWallet, fetchWalletTransactions } from "../api/wallet";
 
 export default function WalletPage() {
 	const { address } = useParams<{ address: string }>();
@@ -16,21 +10,15 @@ export default function WalletPage() {
 	const [transactions, setTransactions] = useState<any[]>([]);
 
 	useEffect(() => {
-		fetch(`http://localhost:3001/api/wallet/${address}`)
-			.then((res) => {
-				if (!res.ok) throw new Error("Wallet not found");
-				return res.json();
-			})
+		if (!address) return;
+		fetchWallet(address)
 			.then(setWallet)
 			.catch((err) => setError(err.message));
 	}, [address]);
 
 	useEffect(() => {
 		if (!address) return;
-		fetch(`http://localhost:3001/api/wallet/${address}/transactions`)
-			.then((res) => res.json())
-			.then(setTransactions)
-			.catch(console.error);
+		fetchWalletTransactions(address).then(setTransactions).catch(console.error);
 	}, [address]);
 
 	if (error) return <p className="text-red-600">{error}</p>;

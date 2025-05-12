@@ -1,37 +1,22 @@
 import { useEffect, useState } from "react";
-import type { Route } from "./+types/home";
-import { TransactionTable } from "./TransactionTable";
+import { TransactionTable } from "../component/TransactionTable";
 import { SearchBar } from "../component/SearchBar";
+import type { Stats } from "../types";
+import { subscribeToStats } from "../api/stats";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
 	return [
 		{ title: "Block Explorer" },
 		{ name: "description", content: "Explore the blockchain!" },
 	];
 }
 
-type Stats = {
-	id: number;
-	createdAt: string;
-	hashRate: number | null;
-	mempoolTxCount: number | null;
-	marketCapUsd: number | null;
-};
-
 export default function Home() {
 	const [stats, setStats] = useState<Stats | null>(null);
 
 	useEffect(() => {
-		const source = new EventSource("http://localhost:3001/events/stats");
-
-		source.onmessage = (event) => {
-			const data: Stats = JSON.parse(event.data);
-			setStats(data);
-		};
-
-		return () => {
-			source.close();
-		};
+		const source = subscribeToStats(setStats);
+		return () => source.close();
 	}, []);
 
 	if (!stats) return <p>Loading stats...</p>;
@@ -63,7 +48,6 @@ export default function Home() {
 				</div>
 			</div>
 
-			{/* Transactions Table Below */}
 			<TransactionTable />
 		</div>
 	);

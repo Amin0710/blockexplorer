@@ -1,17 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-export type Transaction = {
-	id: number;
-	hash: string;
-	blockId: number | null;
-	timestamp: string;
-	value: number;
-	fee: number;
-	sender?: string;
-	receiver?: string;
-	chain: "bitcoin" | "ethereum";
-};
+import type { Transaction } from "../types";
 
 export function TransactionTable() {
 	const [transactions, setTransactions] = useState<Transaction[]>([]);

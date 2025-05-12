@@ -1,13 +1,13 @@
 import { type RouteConfig, index } from "@react-router/dev/routes";
 
 export default [
-	index("routes/home.tsx"),
+	index("pages/Home.tsx"),
 	{
 		path: "wallet/:address",
-		file: "routes/wallet.$address.tsx",
+		file: "pages/Wallet.tsx",
 	},
 	{
 		path: "search",
-		file: "routes/SearchResults.tsx",
+		file: "pages/SearchResults.tsx",
 	},
 ] satisfies RouteConfig;

@@ -1,6 +1,7 @@
 import { useSearchParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import type { Transaction } from "./TransactionTable";
+import type { Transaction } from "../types";
+import { fetchSearchResult } from "../api/search";
 
 export default function SearchResults() {
 	const [params] = useSearchParams();
@@ -10,13 +11,8 @@ export default function SearchResults() {
 
 	useEffect(() => {
 		if (!query) return;
-
-		fetch(`http://localhost:3001/api/search?q=${query}`)
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.error) throw new Error(data.error);
-				setResult(data);
-			})
+		fetchSearchResult(query)
+			.then(setResult)
 			.catch((err) => setError(err.message));
 	}, [query]);
 
@@ -59,7 +55,11 @@ export default function SearchResults() {
 	}
 
 	if (result.type === "block") {
-		const transactions = result.data as Transaction[];
+		const blockData = result.data as {
+			blockId: number;
+			transactions: Transaction[];
+		};
+		const transactions = blockData.transactions;
 
 		return (
 			<div className="p-4">
