@@ -3,6 +3,7 @@ import { TransactionTable } from "../component/TransactionTable";
 import { SearchBar } from "../component/SearchBar";
 import type { Stats } from "../types";
 import { subscribeToStats } from "../api/stats";
+import { Spinner } from "../component/Spinner";
 
 export function meta() {
 	return [
@@ -19,7 +20,7 @@ export default function Home() {
 		return () => source.close();
 	}, []);
 
-	if (!stats) return <p>Loading stats...</p>;
+	if (!stats) return <Spinner />;
 
 	return (
 		<div className="min-h-screen bg-slate-900 text-white p-6">

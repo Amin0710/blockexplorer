@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Transaction } from "../types";
+import { fetchTransactions } from "../api/transactions";
 
 export function TransactionTable() {
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -8,16 +9,16 @@ export function TransactionTable() {
 	const [totalPages, setTotalPages] = useState(1);
 
 	useEffect(() => {
-		fetch(`http://localhost:3001/api/transactions?page=${page}`)
-			.then((res) => res.json())
-			.then((data) => {
-				setTransactions(data.transactions);
-				setTotalPages(data.totalPages);
-			});
+		fetchTransactions(page)
+			.then(({ transactions, totalPages }) => {
+				setTransactions(transactions);
+				setTotalPages(totalPages);
+			})
+			.catch((err) => console.error(err));
 	}, [page]);
 
 	return (
-		<div className="mt-10 p-6 bg-white text-black rounded shadow w-full max-w-4xl mx-auto">
+		<div className="mt-10 p-6 bg-white text-black rounded shadow w-full max-w-7xl mx-auto">
 			<h2 className="text-xl font-bold mb-4">📄 Recent Transactions</h2>
 			<table className="w-full table-auto border-collapse text-sm">
 				<thead>
@@ -46,14 +47,14 @@ export function TransactionTable() {
 								<Link
 									to={`/wallet/${tx.sender}`}
 									className="text-blue-500 underline">
-									{tx.sender}
+									Sender Wallet Address
 								</Link>
 							</td>
 							<td>
 								<Link
 									to={`/wallet/${tx.receiver}`}
 									className="text-blue-500 underline">
-									{tx.receiver}
+									Receiver Wallet Address
 								</Link>
 							</td>
 							<td className="px-2 py-1">
