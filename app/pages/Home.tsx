@@ -23,27 +23,29 @@ export default function Home() {
 	if (!stats) return <Spinner />;
 
 	return (
-		<div className="min-h-screen bg-slate-900 text-white p-6">
+		<div className="min-h-screen bg-slate-900 text-white p-4 sm:p-6">
 			<div className="flex justify-center">
-				<div className="p-6 bg-white text-black rounded shadow w-full max-w-md space-y-2">
+				<div className="p-4 sm:p-6 bg-white text-black rounded shadow w-full max-w-md space-y-2">
 					<SearchBar />
-					<h2 className="text-xl font-semibold">📊 Live Blockchain Stats</h2>
-					<p>
+					<h2 className="text-lg sm:text-xl font-semibold">
+						📊 Live Blockchain Stats
+					</h2>
+					<p className="text-sm sm:text-base">
 						<strong>Hashrate:</strong>{" "}
 						{stats.hashRate != null
 							? (Number(stats.hashRate) / 1e18).toFixed(2) + " EH/s"
 							: "N/A"}
 					</p>
-					<p>
+					<p className="text-sm sm:text-base">
 						<strong>Mempool TX Count:</strong> {stats.mempoolTxCount ?? "N/A"}
 					</p>
-					<p>
+					<p className="text-sm sm:text-base">
 						<strong>Market Cap (USD):</strong>{" "}
 						{stats.marketCapUsd != null
 							? `$${stats.marketCapUsd.toLocaleString()}`
 							: "N/A"}
 					</p>
-					<p className="text-sm text-gray-500">
+					<p className="text-xs sm:text-sm text-gray-500">
 						Updated: {new Date(stats.createdAt).toLocaleTimeString()}
 					</p>
 				</div>

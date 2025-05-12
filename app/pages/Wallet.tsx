@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { LoaderFunctionArgs } from "react-router-dom";
 import { useLoaderData } from "react-router-dom";
 import { PageContainer } from "../component/PageContainer";
@@ -34,35 +35,39 @@ export default function Wallet() {
 
 	return (
 		<PageContainer>
-			<h2 className="text-xl font-semibold">🔍 Wallet Details</h2>
-			<p>
-				<strong>Recent TXs Shown:</strong> {transactions.length}
-			</p>
-			<p>
-				<strong>Address:</strong> {wallet.address}
-			</p>
-			<p>
-				<strong>Balance:</strong> {wallet.balance ?? "N/A"} BTC
-			</p>
-			<p>
-				<strong>TX Count:</strong> {wallet.txCount ?? "N/A"}
-			</p>
-			<p>
-				<strong>First Seen:</strong> {wallet.firstSeen ?? "N/A"}
-			</p>
-			<p>
-				<strong>Last Seen:</strong> {wallet.lastSeen ?? "N/A"}
-			</p>
+			<h2 className="text-lg sm:text-xl font-semibold">🔍 Wallet Details</h2>
+			<div className="space-y-2 text-sm sm:text-base">
+				<p>
+					<strong>Recent TXs Shown:</strong> {transactions.length}
+				</p>
+				<p>
+					<strong>Address:</strong> {wallet.address}
+				</p>
+				<p>
+					<strong>Balance:</strong> {wallet.balance ?? "N/A"} BTC
+				</p>
+				<p>
+					<strong>TX Count:</strong> {wallet.txCount ?? "N/A"}
+				</p>
+				<p>
+					<strong>First Seen:</strong> {wallet.firstSeen ?? "N/A"}
+				</p>
+				<p>
+					<strong>Last Seen:</strong> {wallet.lastSeen ?? "N/A"}
+				</p>
+			</div>
 
-			<h3 className="text-lg font-semibold mt-6">🧾 Recent Transactions</h3>
+			<h3 className="text-base sm:text-lg font-semibold mt-6">
+				🧾 Recent Transactions
+			</h3>
 			<ul className="space-y-2">
 				{transactions.map((tx) => (
-					<li key={tx.hash} className="text-sm border p-2 rounded">
-						<div>
+					<li key={tx.hash} className="text-xs sm:text-sm border p-2 rounded">
+						<div className="break-all">
 							<strong>Hash:</strong> {tx.hash}
 						</div>
 						<div>
-							<strong>Chain:</strong>
+							<strong>Chain:</strong>{" "}
 							<span
 								className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
 									tx.chain === "ethereum"
@@ -83,10 +88,10 @@ export default function Wallet() {
 						<div>
 							<strong>Time:</strong> {new Date(tx.timestamp).toLocaleString()}
 						</div>
-						<div>
+						<div className="break-all">
 							<strong>From:</strong> {tx.sender}
 						</div>
-						<div>
+						<div className="break-all">
 							<strong>To:</strong> {tx.receiver}
 						</div>
 					</li>
