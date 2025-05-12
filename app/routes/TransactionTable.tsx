@@ -10,6 +10,7 @@ type Transaction = {
 	fee: number;
 	sender?: string;
 	receiver?: string;
+	chain: "bitcoin" | "ethereum";
 };
 
 export function TransactionTable() {
@@ -33,19 +34,24 @@ export function TransactionTable() {
 				<thead>
 					<tr className="bg-gray-100 text-left">
 						<th className="px-2 py-1">Hash</th>
-						<th className="px-2 py-1">Value (BTC)</th>
-						<th className="px-2 py-1">Fee (BTC)</th>
+						<th className="px-2 py-1">Value</th>
+						<th className="px-2 py-1">Fee</th>
 						<th className="px-2 py-1">Block</th>
 						<th className="px-2 py-1">Sender</th>
 						<th className="px-2 py-1">Receiver</th>
+						<th className="px-2 py-1">Chain</th>
 					</tr>
 				</thead>
 				<tbody>
 					{transactions.map((tx) => (
 						<tr key={tx.id} className="border-t">
 							<td className="px-2 py-1 text-xs">{tx.hash.slice(0, 16)}...</td>
-							<td className="px-2 py-1">{tx.value.toFixed(8)}</td>
-							<td className="px-2 py-1">{tx.fee.toFixed(8)}</td>
+							<td className="px-2 py-1">
+								{tx.value.toFixed(8)} {tx.chain === "ethereum" ? "ETH" : "BTC"}
+							</td>
+							<td className="px-2 py-1">
+								{tx.fee.toFixed(8)} {tx.chain === "ethereum" ? "ETH" : "BTC"}
+							</td>
 							<td className="px-2 py-1">{tx.blockId ?? "N/A"}</td>
 							<td>
 								<Link
@@ -60,6 +66,16 @@ export function TransactionTable() {
 									className="text-blue-500 underline">
 									{tx.receiver}
 								</Link>
+							</td>
+							<td className="px-2 py-1">
+								<span
+									className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
+										tx.chain === "ethereum"
+											? "bg-purple-200 text-purple-800"
+											: "bg-yellow-200 text-yellow-800"
+									}`}>
+									{tx.chain.toUpperCase()}
+								</span>
 							</td>
 						</tr>
 					))}

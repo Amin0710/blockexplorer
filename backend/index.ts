@@ -35,7 +35,7 @@ async function fetchAndStoreStats() {
 	}
 }
 
-async function fetchAndStoreTransactions() {
+async function fetchAndUpdateBitcoinData() {
 	try {
 		const response = await axios.get(
 			"https://api.blockchair.com/bitcoin/transactions?q=is_coinbase(false)&limit=10"
@@ -55,6 +55,53 @@ async function fetchAndStoreTransactions() {
 			const sender = inputs?.[0]?.recipient ?? "unknown";
 			const receiver = outputs?.[0]?.recipient ?? "unknown";
 
+			for (const input of inputs ?? []) {
+				const sender = input.recipient;
+				const value = input.value / 1e8;
+
+				if (sender) {
+					await prisma.wallet.upsert({
+						where: { address: sender },
+						update: {
+							lastSeen: new Date(),
+							txCount: { increment: 1 },
+							balance: { decrement: value },
+						},
+						create: {
+							address: sender,
+							balance: -value,
+							txCount: 1,
+							firstSeen: new Date(),
+							lastSeen: new Date(),
+						},
+					});
+				}
+			}
+
+			for (const output of outputs ?? []) {
+				const receiver = output.recipient;
+				const value = output.value / 1e8;
+
+				if (receiver) {
+					await prisma.wallet.upsert({
+						where: { address: receiver },
+						update: {
+							lastSeen: new Date(),
+							txCount: { increment: 1 },
+							balance: { increment: value },
+						},
+						create: {
+							address: receiver,
+							balance: value,
+							txCount: 1,
+							firstSeen: new Date(),
+							lastSeen: new Date(),
+						},
+					});
+				}
+			}
+
+			// Store transaction
 			await prisma.transaction.upsert({
 				where: { hash: tx.hash },
 				update: { sender, receiver },
@@ -63,7 +110,7 @@ async function fetchAndStoreTransactions() {
 					chain: "bitcoin",
 					blockId: tx.block_id,
 					timestamp: new Date(tx.time),
-					value: tx.output_total / 1e8, // Satoshi → BTC
+					value: tx.output_total / 1e8,
 					fee: tx.fee / 1e8,
 					sender,
 					receiver,
@@ -71,19 +118,99 @@ async function fetchAndStoreTransactions() {
 			});
 		}
 
-		console.log(`[✅] Synced ${transactions.length} transactions`);
+		console.log(`[✅] Synced ${transactions.length} BTC transactions`);
 	} catch (error) {
 		console.error("❌ Failed to fetch transactions:", error);
 	}
 }
 
+async function fetchAndUpdateEthereumData() {
+	try {
+		const response = await axios.get(
+			"https://api.blockchair.com/ethereum/transactions?limit=10"
+		);
+
+		const transactions = response.data?.data;
+		if (!transactions || !Array.isArray(transactions)) return;
+
+		for (const tx of transactions) {
+			if (!tx.hash || !tx.sender || !tx.recipient) {
+				console.warn("❌ Skipping invalid ETH tx:", tx);
+				continue;
+			}
+
+			const hash = tx.hash;
+			const sender = tx.sender;
+			const receiver = tx.recipient;
+			const value = parseFloat(tx.value) / 1e18;
+			const fee = parseFloat(tx.fee || "0") / 1e18;
+
+			if (value === 0) continue;
+
+			await prisma.wallet.upsert({
+				where: { address: sender },
+				update: {
+					lastSeen: new Date(),
+					txCount: { increment: 1 },
+					balance: { decrement: value },
+				},
+				create: {
+					address: sender,
+					balance: -value,
+					txCount: 1,
+					firstSeen: new Date(),
+					lastSeen: new Date(),
+				},
+			});
+
+			await prisma.wallet.upsert({
+				where: { address: receiver },
+				update: {
+					lastSeen: new Date(),
+					txCount: { increment: 1 },
+					balance: { increment: value },
+				},
+				create: {
+					address: receiver,
+					balance: value,
+					txCount: 1,
+					firstSeen: new Date(),
+					lastSeen: new Date(),
+				},
+			});
+
+			// Store transaction
+			await prisma.transaction.upsert({
+				where: { hash },
+				update: { sender, receiver },
+				create: {
+					hash,
+					chain: "ethereum",
+					blockId: tx.block_id,
+					timestamp: new Date(tx.time),
+					value,
+					fee,
+					sender,
+					receiver,
+				},
+			});
+		}
+
+		console.log(`[✅] Synced ${transactions.length} ETH transactions`);
+	} catch (error) {
+		console.error("❌ Failed to fetch ETH transactions:", error);
+	}
+}
+
 // Initial fetch
 fetchAndStoreStats();
-fetchAndStoreTransactions();
+fetchAndUpdateBitcoinData();
+fetchAndUpdateEthereumData();
 
 // Auto-refresh every 60 seconds
 setInterval(fetchAndStoreStats, 60_000);
-setInterval(fetchAndStoreTransactions, 60_000);
+setInterval(fetchAndUpdateBitcoinData, 60_000);
+setInterval(fetchAndUpdateEthereumData, 60_000);
 
 // SSE for live stats
 app.get("/events/stats", async (req, res) => {
@@ -151,8 +278,26 @@ const getWalletByAddress: RequestHandler = async (req, res) => {
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
-
 app.get("/api/wallet/:address", getWalletByAddress);
+
+app.get("/api/wallet/:address/transactions", async (req, res) => {
+	const { address } = req.params;
+
+	try {
+		const transactions = await prisma.transaction.findMany({
+			where: {
+				OR: [{ sender: address }, { receiver: address }],
+			},
+			orderBy: { timestamp: "desc" },
+			take: 10,
+		});
+
+		res.json(transactions);
+	} catch (error) {
+		console.error("❌ Failed to fetch wallet transactions:", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+});
 
 app.listen(PORT, () => {
 	console.log(`🚀 Server listening on http://localhost:${PORT}`);
