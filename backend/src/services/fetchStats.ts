@@ -4,8 +4,14 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function fetchAndStoreStats() {
+	const apiUrl = process.env.BLOCKCHAIR_API_URL;
+
+	if (!apiUrl) {
+		throw new Error("Missing Blockchair API URL");
+	}
+
 	try {
-		const response = await axios.get("https://api.blockchair.com/stats");
+		const response = await axios.get(apiUrl);
 		const btcStats = response.data?.data?.bitcoin?.data;
 
 		if (!btcStats) return;

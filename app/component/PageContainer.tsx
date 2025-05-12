@@ -10,7 +10,7 @@ export function PageContainer({ children }: Props) {
 	return (
 		<div className="min-h-screen bg-slate-900 text-white p-4 sm:p-6">
 			<div className="flex justify-center items-center p-4 sm:p-6 bg-white text-black rounded shadow w-full max-w-7xl mx-auto">
-				<div className="w-full">
+				<div className="w-full md:w-auto">
 					<div className="space-y-2">
 						<div className="flex items-center justify-between">
 							<Link
