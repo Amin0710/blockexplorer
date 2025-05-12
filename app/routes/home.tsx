@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Route } from "./+types/home";
 import { TransactionTable } from "./TransactionTable";
+import { SearchBar } from "../component/SearchBar";
 
 export function meta({}: Route.MetaArgs) {
 	return [
@@ -37,9 +38,9 @@ export default function Home() {
 
 	return (
 		<div className="min-h-screen bg-slate-900 text-white p-6">
-			{/* Stats Card */}
 			<div className="flex justify-center">
 				<div className="p-6 bg-white text-black rounded shadow w-full max-w-md space-y-2">
+					<SearchBar />
 					<h2 className="text-xl font-semibold">📊 Live Blockchain Stats</h2>
 					<p>
 						<strong>Hashrate:</strong>{" "}

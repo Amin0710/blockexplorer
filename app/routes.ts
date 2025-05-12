@@ -6,4 +6,8 @@ export default [
 		path: "wallet/:address",
 		file: "routes/wallet.$address.tsx",
 	},
+	{
+		path: "search",
+		file: "routes/SearchResults.tsx",
+	},
 ] satisfies RouteConfig;
