@@ -1,36 +1,34 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { SearchBar } from "../component/SearchBar";
+import type { LoaderFunctionArgs } from "react-router-dom";
+import { useLoaderData } from "react-router-dom";
 import { PageContainer } from "../component/PageContainer";
-import type { Wallet } from "../types";
+import { Spinner } from "../component/Spinner";
 import { fetchWallet, fetchWalletTransactions } from "../api/wallet";
-import { Spinner } from "~/component/Spinner";
 
-export default function WalletPage() {
-	const { address } = useParams<{ address: string }>();
-	const [wallet, setWallet] = useState<Wallet | null>(null);
-	const [error, setError] = useState("");
-	const [transactions, setTransactions] = useState<any[]>([]);
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+	const address = params.address;
+	if (!address) throw new Error("Missing address param");
 
-	useEffect(() => {
-		if (!address) return;
-		fetchWallet(address)
-			.then(setWallet)
-			.catch((err) => setError(err.message));
-	}, [address]);
+	const [wallet, transactions] = await Promise.all([
+		fetchWallet(address),
+		fetchWalletTransactions(address),
+	]);
 
-	useEffect(() => {
-		if (!address) return;
-		fetchWalletTransactions(address).then(setTransactions).catch(console.error);
-	}, [address]);
+	return { wallet, transactions };
+};
 
-	if (error) {
-		return (
-			<PageContainer>
-				<p className="text-red-600">{error}</p>
-			</PageContainer>
-		);
-	}
+export function ErrorBoundary({ error }: { error: Error }) {
+	return (
+		<PageContainer>
+			<p className="text-red-600 font-semibold">❌ {error.message}</p>
+		</PageContainer>
+	);
+}
+
+export default function Wallet() {
+	const { wallet, transactions } = useLoaderData() as {
+		wallet: any;
+		transactions: any[];
+	};
 
 	if (!wallet) return <Spinner />;
 
@@ -55,6 +53,7 @@ export default function WalletPage() {
 			<p>
 				<strong>Last Seen:</strong> {wallet.lastSeen ?? "N/A"}
 			</p>
+
 			<h3 className="text-lg font-semibold mt-6">🧾 Recent Transactions</h3>
 			<ul className="space-y-2">
 				{transactions.map((tx) => (
